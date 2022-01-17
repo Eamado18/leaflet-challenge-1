@@ -3,8 +3,30 @@ var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_we
 
 d3.json(queryUrl).then(function (data) {
     createFeatures(data.features);
+    
 }); 
 
+
+function getColor(d) {
+  return d > 90 ? '#BD0026' :
+         d < 91  ? '#E31A1C' :
+         d < 71  ? '#FC4E2A' :
+         d < 51   ? '#FD8D3C' :
+         d < 31  ? '#FEB24C' :
+         d < 11   ? '#FED976' :
+                    '#FFEDA0';
+}
+
+function style(feature) {
+  return {
+      fillColor: getColor(geometry.coordinates[3]),
+      weight: 2,
+      opacity: 1,
+      color: 'white',
+      dashArray: '3',
+      fillOpacity: 0.7
+  };
+}
 
 function createFeatures(earthquakeData) {
     
@@ -13,24 +35,12 @@ function createFeatures(earthquakeData) {
       layer.bindPopup("Magnitude: " + feature.properties.mag + " Location and Depth: " + feature.properties.place); 
     } 
     
-    function customcolor () {
-       if (depth < 11)
-         customcolor = "blue";
-       else if (depth < 31)
-       customcolor = "green";
-       else if (feature.geometry.coordinates[3] < 51)
-       customcolor = "yellow";
-       else if (feature.geometry.coordinates[3] < 71)
-       customcolor = "orange";
-       else if (feature.geometry.coordinates[3] < 91)
-       customcolor = "aqua";
-       return customcolor
-    }
-
+    
+  
     var earthquakes = L.geoJSON(earthquakeData, {
       pointToLayer: function(feature, latlng) {
           return new L.CircleMarker(latlng, {
-             color: "red",
+            style: style,
              radius: Math.exp(feature.properties.mag)/15
           });
       },
@@ -74,24 +84,8 @@ function createMap(earthquakes) {
   }).addTo(myMap);
 
 }
-var legend = L.control({position: 'bottomleft'});
-    legend.onAdd = function (myMap) {
 
-    var div = L.DomUtil.create('div', 'info legend');
-    labels = ['<strong>Categories</strong>'],
-    categories = ['Road Surface','Signage','Line Markings','Roadside Hazards','Other'];
 
-    for (var i = 0; i < categories.length; i++) {
 
-            div.innerHTML += 
-            labels.push(
-                '<i class="circle" style="background:' + getColor(categories[i]) + '"></i> ' +
-            (categories[i] ? categories[i] : '+'));
-
-        }
-        div.innerHTML = labels.join('<br>');
-    return div;
-    };
-    legend.addTo(myMap);
 
 
